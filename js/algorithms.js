@@ -27,6 +27,18 @@ const SortingTheory = {
         numSwaps: "น้อยมาก (ไม่เกิน n-1 ครั้งเสมอ!)",
         stability: "Unstable (โดยทั่วไป)",
         keyConcept: "ค้นหาค่าน้อยที่สุดในรอบ แล้วสลับมาวางข้างหน้า"
+    },
+    insertionSort: {
+        name: "Insertion Sort (การเรียงลำดับแบบแทรก)",
+        icon: "📥",
+        description: "นำข้อมูลทีละตัวจากส่วนที่ยังไม่ได้เรียง มา 'แทรก' (Insert) ลงในตำแหน่งที่ถูกต้องของส่วนที่เรียงแล้วทางด้านซ้าย คล้ายกับการหยิบไพ่ขึ้นมาจัดเรียงในมือ",
+        bestCase: "O(n) (กรณีข้อมูลเรียงอยู่แล้ว มีการเปรียบเทียบแค่รอบละ 1 ครั้ง)",
+        averageCase: "O(n²)",
+        worstCase: "O(n²) (เมื่อข้อมูลเรียงกลับด้าน ต้องเลื่อนข้อมูลทุกตัว)",
+        spaceComplexity: "O(1) (In-place)",
+        numSwaps: "ปานกลาง (การเลื่อน/Shifting ข้อมูล)",
+        stability: "Stable (คงที่)",
+        keyConcept: "ขยายส่วนที่เรียงแล้วทีละ 1 ช่อง โดยหยิบตัว Key มาแทรกในตำแหน่งที่เหมาะสม"
     }
 };
 
@@ -34,7 +46,7 @@ class AlgorithmState {
     constructor(array, algorithmType) {
         this.original = [...array];
         this.array = [...array];
-        this.type = algorithmType; // 'bubble' or 'selection'
+        this.type = algorithmType; // 'bubble', 'selection', or 'insertion'
         this.n = array.length;
 
         // Common tracking
@@ -55,6 +67,10 @@ class AlgorithmState {
             this.minIndex = 0; // index of current minimum found
             this.phase = 'scan'; // 'scan' (looking for min) or 'swap' (ready to swap with i)
             this.lockedIndices = new Set();
+        } else if (this.type === 'insertion') {
+            this.i = 1; // current key index to insert (from 1 to n-1)
+            this.j = 1; // current position of the key as it shifts leftwards
+            this.lockedIndices = new Set([0]); // index 0 is initially considered sorted
         }
     }
 
@@ -252,6 +268,112 @@ class AlgorithmState {
             nextTargetI: this.i
         };
     }
+
+    // ==========================================
+    // INSERTION SORT LOGIC
+    // ==========================================
+    getInsertionExpectedAction() {
+        if (this.type !== 'insertion' || this.isFinished) return null;
+        if (this.j <= 0) return 'INSERT';
+        const keyVal = this.array[this.j];
+        const leftVal = this.array[this.j - 1];
+        return keyVal < leftVal ? 'SHIFT' : 'INSERT';
+    }
+
+    insertionStep(userAction) {
+        // userAction: 'SHIFT' (move key left) or 'INSERT' (settle key in place)
+        if (this.type !== 'insertion' || this.isFinished) return null;
+
+        const keyVal = this.array[this.j];
+        const leftVal = this.j > 0 ? this.array[this.j - 1] : null;
+        const expected = (this.j > 0 && keyVal < leftVal) ? 'SHIFT' : 'INSERT';
+
+        this.comparisons++;
+
+        const isCorrect = (userAction === expected);
+        let actionDesc = "";
+
+        if (!isCorrect) {
+            this.errors++;
+            if (expected === 'SHIFT') {
+                actionDesc = `ผิดพลาด! Key (${keyVal}) น้อยกว่าตัวซ้าย (${leftVal}) จึงต้อง "เลื่อนซ้าย (SHIFT LEFT)"`;
+            } else {
+                actionDesc = `ผิดพลาด! Key (${keyVal}) มากกว่าหรือเท่ากับตัวซ้าย (${leftVal}) จึงอยู่ในตำแหน่งที่ถูกต้องแล้ว ให้กด "วางลง (INSERT)"`;
+            }
+            return {
+                success: false,
+                isCorrect: false,
+                message: actionDesc,
+                keyIndex: this.j,
+                leftIndex: this.j - 1
+            };
+        }
+
+        let passCompleted = false;
+        let lockedIndex = null;
+
+        if (userAction === 'SHIFT') {
+            // Swap key with left neighbor
+            const prevJ = this.j;
+            const temp = this.array[this.j];
+            this.array[this.j] = this.array[this.j - 1];
+            this.array[this.j - 1] = temp;
+            this.swaps++;
+            this.j--;
+            actionDesc = `ถูกต้อง! เลื่อน Key (${keyVal}) ไปทางซ้าย สลับกับ (${leftVal})`;
+
+            // If key reached index 0, it cannot move further left -> automatically settled!
+            if (this.j === 0) {
+                passCompleted = true;
+                actionDesc += ` | Key ถึงตำแหน่งซ้ายสุด [0] แทรกเรียบร้อย!`;
+                for (let k = 0; k <= this.i; k++) {
+                    this.lockedIndices.add(k);
+                }
+                lockedIndex = this.i;
+
+                this.i++;
+                if (this.i >= this.n) {
+                    this.isFinished = true;
+                    actionDesc += ` ✨ จัดเรียงแบบ Insertion Sort เสร็จสมบูรณ์!`;
+                } else {
+                    this.j = this.i;
+                }
+            }
+        } else {
+            // INSERT: Settled in place
+            passCompleted = true;
+            if (leftVal !== null) {
+                actionDesc = `ถูกต้อง! แทรก Key (${keyVal}) ลงที่ตำแหน่ง [${this.j}] (${keyVal} >= ${leftVal})`;
+            } else {
+                actionDesc = `ถูกต้อง! แทรก Key (${keyVal}) ลงที่ตำแหน่ง [${this.j}] เรียบร้อยแล้ว`;
+            }
+
+            for (let k = 0; k <= this.i; k++) {
+                this.lockedIndices.add(k);
+            }
+            lockedIndex = this.i;
+
+            this.i++;
+            if (this.i >= this.n) {
+                this.isFinished = true;
+                actionDesc += ` ✨ จัดเรียงแบบ Insertion Sort เสร็จสมบูรณ์!`;
+            } else {
+                this.j = this.i;
+            }
+        }
+
+        return {
+            success: true,
+            isCorrect: true,
+            action: userAction,
+            message: actionDesc,
+            passCompleted,
+            lockedIndex,
+            isFinished: this.isFinished,
+            nextI: this.i,
+            nextJ: this.j
+        };
+    }
 }
 
 // Generate random array with distinct readable numbers
@@ -334,9 +456,53 @@ const GAME_LEVELS = [
     },
     {
         id: 7,
+        algorithm: 'insertion',
+        title: "ระดับ 7: การจัดไพ่เวทมนตร์ (Insertion Sort เริ่มต้น)",
+        subtitle: "หยิบข้อมูลทีละตัวแล้วเลื่อนไปแทรกในตำแหน่งที่ถูกต้อง",
+        theme: "book",
+        data: [52, 25, 80, 38],
+        description: "เรียนรู้อัลกอริทึมที่ 3! Insertion Sort เหมือนการจัดไพ่ในมือ สังเกตการ์ด Key สีม่วง หากน้อยกว่าตัวซ้ายให้กด 'เลื่อนซ้าย' หากมากกว่าให้กด 'วางลง'",
+        targetComparisons: 5,
+        targetSwaps: 3
+    },
+    {
+        id: 8,
+        algorithm: 'insertion',
+        title: "ระดับ 8: ขบวนโบกี้จัดเรียง (Insertion Sort 5 ชิ้น)",
+        subtitle: "แทรกตู้สินค้าเข้าสู่ขบวนรถไฟที่เรียงลำดับแล้ว",
+        theme: "train",
+        data: [68, 41, 85, 19, 53],
+        description: "นำตู้สินค้าทีละตู้เข้ามาแทรกในขบวน สังเกตว่าฝั่งซ้ายมือจะคงสถานะเรียงลำดับถูกต้องเสมอ (Sorted Subarray)",
+        targetComparisons: 9,
+        targetSwaps: 5
+    },
+    {
+        id: 9,
+        algorithm: 'insertion',
+        title: "ระดับ 9: คลังคัมภีร์ย้อนศร (Worst Case Insertion)",
+        subtitle: "กรณีแย่ที่สุด ข้อมูลเรียงกลับด้าน ต้องเลื่อนทุกตัว O(n²)",
+        theme: "book",
+        data: [88, 74, 59, 43, 29, 15],
+        description: "เมื่อข้อมูลเรียงจากมากไปน้อย ทุกตัวที่หยิบมาเป็น Key จะต้องถูกเลื่อนไปจนถึงตำแหน่งซ้ายสุดเสมอ!",
+        targetComparisons: 15,
+        targetSwaps: 15
+    },
+    {
+        id: 10,
+        algorithm: 'insertion',
+        title: "ระดับ 10: ข้อมูลเกือบเรียงสมบูรณ์ (Best Case Insertion)",
+        subtitle: "สัมผัสจุดเด่นที่สุดของ Insertion Sort ที่ทำงานเร็วระดับ O(n)",
+        theme: "train",
+        data: [12, 24, 36, 85, 48, 92],
+        description: "ข้อมูลเกือบจะเรียงอยู่แล้ว! สังเกตว่าเมื่อ Key มากกว่าตัวซ้ายอยู่แล้ว เพียงกด 'วางลง' ก็ผ่านรอบได้อย่างรวดเร็วมาก",
+        targetComparisons: 6,
+        targetSwaps: 1
+    },
+    {
+        id: 11,
         algorithm: 'bubble',
-        title: "ระดับ 7: ปรมาจารย์ฟองสบู่ (Master Bubble 7 ชิ้น)",
-        subtitle: "ทดสอบความเร็วและความแม่นยำในการจัดเรียง",
+        title: "ระดับ 11: ปรมาจารย์ฟองสบู่ (Master Bubble 7 ชิ้น)",
+        subtitle: "ทดสอบความเร็วและความแม่นยำในการจัดเรียงฟองสบู่",
         theme: "book",
         data: [65, 34, 82, 11, 49, 93, 27],
         description: "รวมทักษะ Bubble Sort ทำคอมโบต่อเนื่องโดยไม่กดผิดเพื่อรับ 3 ดาวเต็ม!",
@@ -344,10 +510,10 @@ const GAME_LEVELS = [
         targetSwaps: 11
     },
     {
-        id: 8,
+        id: 12,
         algorithm: 'selection',
-        title: "ระดับ 8: สุดยอดบรรณารักษ์ (The Grand Finale)",
-        subtitle: "การทดสอบขั้นสูงสุดของ Selection Sort",
+        title: "ระดับ 12: สุดยอดบรรณารักษ์แห่งอัลกอริทึม (The Grand Finale)",
+        subtitle: "บททดสอบขั้นสูงสุด ก้าวขึ้นสู่ตำแหน่ง Grand Sorter Master",
         theme: "book",
         data: [77, 98, 21, 63, 15, 84, 42, 39],
         description: "ด่านสุดท้ายเพื่อก้าวขึ้นสู่ตำแหน่ง Grand Sorter Master!",

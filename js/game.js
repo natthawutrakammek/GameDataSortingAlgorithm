@@ -28,6 +28,10 @@ class SortingGame {
         this.sandboxAlgo = 'bubble';
         this.sandboxSize = 6;
 
+        // Duel settings
+        this.duelPlayerAlgo = 'bubble';
+        this.duelAiAlgo = 'selection';
+
         // DOM elements cache
         this.dom = {};
         this.initDOM();
@@ -191,9 +195,19 @@ class SortingGame {
         this.isGameActive = true;
 
         // UI Metadata
-        this.dom.levelBadge.textContent = levelData.algorithm === 'bubble' ? 'Bubble Sort' : 'Selection Sort';
-        this.dom.levelBadge.style.borderColor = levelData.algorithm === 'bubble' ? 'rgba(56, 189, 248, 0.4)' : 'rgba(245, 158, 11, 0.4)';
-        this.dom.levelBadge.style.color = levelData.algorithm === 'bubble' ? 'var(--accent-blue)' : 'var(--accent-amber)';
+        if (levelData.algorithm === 'bubble') {
+            this.dom.levelBadge.textContent = 'Bubble Sort';
+            this.dom.levelBadge.style.borderColor = 'rgba(56, 189, 248, 0.4)';
+            this.dom.levelBadge.style.color = 'var(--accent-blue)';
+        } else if (levelData.algorithm === 'selection') {
+            this.dom.levelBadge.textContent = 'Selection Sort';
+            this.dom.levelBadge.style.borderColor = 'rgba(245, 158, 11, 0.4)';
+            this.dom.levelBadge.style.color = 'var(--accent-amber)';
+        } else if (levelData.algorithm === 'insertion') {
+            this.dom.levelBadge.textContent = 'Insertion Sort';
+            this.dom.levelBadge.style.borderColor = 'rgba(168, 85, 247, 0.4)';
+            this.dom.levelBadge.style.color = 'var(--accent-purple)';
+        }
         
         this.dom.levelTitle.textContent = levelData.title;
         this.dom.levelSubtitle.textContent = levelData.subtitle;
@@ -223,7 +237,18 @@ class SortingGame {
         this.combo = 0;
         this.isGameActive = true;
 
-        this.dom.levelBadge.textContent = `Sandbox (${this.sandboxAlgo === 'bubble' ? 'Bubble' : 'Selection'})`;
+        const algoBadgeNames = { bubble: 'Bubble', selection: 'Selection', insertion: 'Insertion' };
+        this.dom.levelBadge.textContent = `Sandbox (${algoBadgeNames[this.sandboxAlgo] || 'Bubble'})`;
+        if (this.sandboxAlgo === 'insertion') {
+            this.dom.levelBadge.style.borderColor = 'rgba(168, 85, 247, 0.4)';
+            this.dom.levelBadge.style.color = 'var(--accent-purple)';
+        } else if (this.sandboxAlgo === 'selection') {
+            this.dom.levelBadge.style.borderColor = 'rgba(245, 158, 11, 0.4)';
+            this.dom.levelBadge.style.color = 'var(--accent-amber)';
+        } else {
+            this.dom.levelBadge.style.borderColor = 'rgba(56, 189, 248, 0.4)';
+            this.dom.levelBadge.style.color = 'var(--accent-blue)';
+        }
         this.dom.levelTitle.textContent = `สนามทดลองอิสระ (${this.sandboxSize} ชิ้น)`;
         this.dom.levelSubtitle.textContent = "ทดลองจัดลำดับอย่างอิสระ สังเกตขั้นตอนและเปรียบเทียบอัลกอริทึม";
         this.dom.actionLogText.textContent = `สร้างชุดข้อมูลสุ่ม ${this.sandboxSize} ชิ้นเรียบร้อยแล้ว`;
@@ -289,6 +314,13 @@ class SortingGame {
                     // Current scan min
                     if (idx === this.algoState.minIndex && idx >= this.algoState.i) {
                         // could highlight current tracked min
+                    }
+                } else if (this.algoState.type === 'insertion') {
+                    if (idx === this.algoState.j) {
+                        card.classList.add('comparing-key');
+                        tagText = '📥 KEY';
+                    } else if (this.algoState.j > 0 && idx === this.algoState.j - 1) {
+                        card.classList.add('comparing-neighbor');
                     }
                 }
             }
@@ -356,6 +388,7 @@ class SortingGame {
                         <select id="sandbox-algo-select" style="background: var(--bg-secondary); color: #fff; border: 1px solid var(--border-color); border-radius: 6px; padding: 4px 8px; font-family: inherit;">
                             <option value="bubble" ${this.sandboxAlgo === 'bubble' ? 'selected' : ''}>🫧 Bubble Sort</option>
                             <option value="selection" ${this.sandboxAlgo === 'selection' ? 'selected' : ''}>🎯 Selection Sort</option>
+                            <option value="insertion" ${this.sandboxAlgo === 'insertion' ? 'selected' : ''}>📥 Insertion Sort</option>
                         </select>
                     </div>
                     <div style="display: flex; align-items: center; gap: 6px;">
@@ -402,6 +435,23 @@ class SortingGame {
                 dock.appendChild(bubbleBtnWrap);
                 document.getElementById('btn-bubble-swap')?.addEventListener('click', () => this.handleBubbleAction('SWAP'));
                 document.getElementById('btn-bubble-keep')?.addEventListener('click', () => this.handleBubbleAction('KEEP'));
+            } else if (this.algoState.type === 'insertion') {
+                const insertBtnWrap = document.createElement('div');
+                insertBtnWrap.style.display = 'flex';
+                insertBtnWrap.style.gap = '12px';
+                insertBtnWrap.innerHTML = `
+                    <button class="action-btn btn-swap" id="btn-insertion-shift" style="background: linear-gradient(135deg, #9333ea, #7e22ce); border-color: rgba(168, 85, 247, 0.4);">
+                        <span>⬅️ เลื่อนซ้าย (SHIFT LEFT)</span>
+                        <span class="kbd-badge">← / A</span>
+                    </button>
+                    <button class="action-btn btn-keep" id="btn-insertion-insert" style="border-color: rgba(168, 85, 247, 0.4);">
+                        <span>📥 วางลง (INSERT)</span>
+                        <span class="kbd-badge">↓ / Enter / Space</span>
+                    </button>
+                `;
+                dock.appendChild(insertBtnWrap);
+                document.getElementById('btn-insertion-shift')?.addEventListener('click', () => this.handleInsertionAction('SHIFT'));
+                document.getElementById('btn-insertion-insert')?.addEventListener('click', () => this.handleInsertionAction('INSERT'));
             } else {
                 const hintSpan = document.createElement('div');
                 hintSpan.style.color = 'var(--text-muted)';
@@ -415,12 +465,46 @@ class SortingGame {
         if (this.currentMode === 'duel') {
             const playerProgress = Math.round((this.algoState.lockedIndices.size / this.algoState.n) * 100);
             const aiProgress = this.aiState ? Math.round((this.aiState.lockedIndices.size / this.aiState.n) * 100) : 0;
+            const algoNames = { bubble: 'Bubble Sort', selection: 'Selection Sort', insertion: 'Insertion Sort' };
+            const pName = algoNames[this.algoState.type] || 'Bubble Sort';
+            const aiName = algoNames[this.aiState ? this.aiState.type : 'selection'] || 'Selection Sort';
+
+            let playerButtonsHtml = '';
+            if (this.algoState.type === 'bubble') {
+                playerButtonsHtml = `
+                    <button class="action-btn btn-swap" id="btn-bubble-swap">
+                        <span>🔄 สลับ (SWAP)</span>
+                        <span class="kbd-badge">Space</span>
+                    </button>
+                    <button class="action-btn btn-keep" id="btn-bubble-keep">
+                        <span>⏭️ ข้าม (KEEP)</span>
+                        <span class="kbd-badge">K</span>
+                    </button>
+                `;
+            } else if (this.algoState.type === 'insertion') {
+                playerButtonsHtml = `
+                    <button class="action-btn btn-swap" id="btn-insertion-shift" style="background: linear-gradient(135deg, #9333ea, #7e22ce); border-color: rgba(168, 85, 247, 0.4);">
+                        <span>⬅️ เลื่อนซ้าย (SHIFT)</span>
+                        <span class="kbd-badge">← / A</span>
+                    </button>
+                    <button class="action-btn btn-keep" id="btn-insertion-insert" style="border-color: rgba(168, 85, 247, 0.4);">
+                        <span>📥 วางลง (INSERT)</span>
+                        <span class="kbd-badge">↓ / Space</span>
+                    </button>
+                `;
+            } else {
+                playerButtonsHtml = `
+                    <div style="color: var(--text-muted); font-size: 0.9rem;">
+                        👉 <strong>คลิกเลือกการ์ดที่มีค่าน้อยที่สุด</strong> ในช่วง [${this.algoState.i}..${this.algoState.n - 1}]
+                    </div>
+                `;
+            }
 
             dock.innerHTML = `
                 <div style="width: 100%; max-width: 600px; display: flex; flex-direction: column; gap: 8px; margin-bottom: 8px;">
                     <div style="display: flex; justify-content: space-between; font-size: 0.85rem; font-weight: 700;">
-                        <span>👤 คุณ (Bubble Sort): ${playerProgress}%</span>
-                        <span style="color: var(--accent-amber);">🤖 AI Bot (Selection Sort): ${aiProgress}%</span>
+                        <span>👤 คุณ (${pName}): ${playerProgress}%</span>
+                        <span style="color: var(--accent-amber);">🤖 AI Bot (${aiName}): ${aiProgress}%</span>
                     </div>
                     <div style="display: flex; gap: 8px; height: 10px;">
                         <div style="flex: 1; background: rgba(255,255,255,0.1); border-radius: 5px; overflow: hidden;">
@@ -431,19 +515,17 @@ class SortingGame {
                         </div>
                     </div>
                 </div>
-                <div style="display: flex; gap: 12px;">
-                    <button class="action-btn btn-swap" id="btn-bubble-swap">
-                        <span>🔄 สลับ (SWAP)</span>
-                        <span class="kbd-badge">Space</span>
-                    </button>
-                    <button class="action-btn btn-keep" id="btn-bubble-keep">
-                        <span>⏭️ ข้าม (KEEP)</span>
-                        <span class="kbd-badge">K</span>
-                    </button>
+                <div style="display: flex; gap: 12px; justify-content: center; align-items: center; flex-wrap: wrap;">
+                    ${playerButtonsHtml}
                 </div>
             `;
-            document.getElementById('btn-bubble-swap')?.addEventListener('click', () => this.handleBubbleAction('SWAP'));
-            document.getElementById('btn-bubble-keep')?.addEventListener('click', () => this.handleBubbleAction('KEEP'));
+            if (this.algoState.type === 'bubble') {
+                document.getElementById('btn-bubble-swap')?.addEventListener('click', () => this.handleBubbleAction('SWAP'));
+                document.getElementById('btn-bubble-keep')?.addEventListener('click', () => this.handleBubbleAction('KEEP'));
+            } else if (this.algoState.type === 'insertion') {
+                document.getElementById('btn-insertion-shift')?.addEventListener('click', () => this.handleInsertionAction('SHIFT'));
+                document.getElementById('btn-insertion-insert')?.addEventListener('click', () => this.handleInsertionAction('INSERT'));
+            }
             return;
         }
 
@@ -468,6 +550,21 @@ class SortingGame {
                     <span>👉 <strong>คลิกที่การ์ด</strong> เพื่อเลือกชิ้นที่มีค่าน้อยที่สุดในช่วง [${this.algoState.i} ถึง ${this.algoState.n - 1}]</span>
                 </div>
             `;
+        } else if (this.algoState.type === 'insertion') {
+            dock.innerHTML = `
+                <div style="display: flex; gap: 12px; flex-wrap: wrap; justify-content: center;">
+                    <button class="action-btn btn-swap" id="btn-insertion-shift" style="background: linear-gradient(135deg, #9333ea, #7e22ce); border-color: rgba(168, 85, 247, 0.4);">
+                        <span>⬅️ เลื่อนซ้าย (SHIFT LEFT)</span>
+                        <span class="kbd-badge">← / A</span>
+                    </button>
+                    <button class="action-btn btn-keep" id="btn-insertion-insert" style="border-color: rgba(168, 85, 247, 0.4);">
+                        <span>📥 วางลง (INSERT)</span>
+                        <span class="kbd-badge">↓ / Enter / Space</span>
+                    </button>
+                </div>
+            `;
+            document.getElementById('btn-insertion-shift').addEventListener('click', () => this.handleInsertionAction('SHIFT'));
+            document.getElementById('btn-insertion-insert').addEventListener('click', () => this.handleInsertionAction('INSERT'));
         }
     }
 
@@ -515,6 +612,25 @@ class SortingGame {
             this.dom.guideTitle.textContent = `Selection Sort — จัดตำแหน่งที่ [${targetI}]`;
             this.dom.guideMessage.textContent = `มองหา "ค่าน้อยที่สุด" ในส่วนที่เหลือ (ช่อง [${targetI}] ถึง [${this.algoState.n - 1}]) แล้วคลิกเลือก`;
             this.dom.guideHint.textContent = `💡 สแกนด้วยสายตาเพื่อหาตัวที่ต่ำที่สุด แล้วนำมาแทนที่ตำแหน่ง ${targetI}`;
+        } else if (this.algoState.type === 'insertion') {
+            const j = this.algoState.j;
+            const keyVal = this.algoState.array[j];
+            const leftVal = j > 0 ? this.algoState.array[j - 1] : null;
+
+            this.dom.guideIcon.textContent = '📥';
+            this.dom.guideTitle.textContent = `Insertion Sort — แทรก Key (${keyVal}) [รอบที่ ${this.algoState.i}]`;
+
+            if (j === 0 || leftVal === null) {
+                this.dom.guideMessage.textContent = `Key (${keyVal}) อยู่ตำแหน่งซ้ายสุด [0] แล้ว`;
+                this.dom.guideHint.textContent = `💡 Key มาถึงตำแหน่งซ้ายสุดแล้ว กด "วางลง (INSERT)" หรือระบบจะจัดวางให้อัตโนมัติ`;
+            } else {
+                this.dom.guideMessage.textContent = `เปรียบเทียบ Key (${keyVal}) ที่ช่อง [${j}] กับตัวซ้าย (${leftVal}) ที่ช่อง [${j - 1}]`;
+                if (keyVal < leftVal) {
+                    this.dom.guideHint.textContent = `💡 สังเกต: ${keyVal} < ${leftVal} (Key น้อยกว่าตัวซ้าย) จึงควร "เลื่อนซ้าย (SHIFT LEFT)"`;
+                } else {
+                    this.dom.guideHint.textContent = `💡 สังเกต: ${keyVal} >= ${leftVal} (Key มากกว่าหรือเท่ากับตัวซ้าย) จึงควร "วางลง (INSERT)"`;
+                }
+            }
         }
     }
 
@@ -642,6 +758,65 @@ class SortingGame {
         }
     }
 
+    handleInsertionAction(action) {
+        if (!this.isGameActive || !this.algoState || this.algoState.type !== 'insertion' || this.algoState.isFinished) return;
+
+        const currentJ = this.algoState.j;
+        const keyVal = this.algoState.array[currentJ];
+        window.soundManager.playValueTone(keyVal);
+
+        const result = this.algoState.insertionStep(action);
+        if (!result) return;
+
+        if (result.isCorrect) {
+            this.combo++;
+            if (this.combo > this.maxCombo) this.maxCombo = this.combo;
+            const pointsEarned = 120 + (this.combo * 20);
+            this.score += pointsEarned;
+
+            if (action === 'SHIFT') {
+                window.soundManager.playSwap();
+                this.animateItemSwap(currentJ - 1, currentJ);
+            } else {
+                window.soundManager.playLock();
+            }
+
+            if (result.passCompleted) {
+                window.soundManager.playLock();
+            }
+
+            this.dom.actionLogText.innerHTML = `<span style="color: var(--accent-green)">✓ ${result.message} (+${pointsEarned} แต้ม)</span>`;
+
+        } else {
+            this.combo = 0;
+            this.score = Math.max(0, this.score - 50);
+            window.soundManager.playError();
+            this.dom.actionLogText.innerHTML = `<span style="color: var(--accent-rose)">✗ ${result.message} (-50 แต้ม)</span>`;
+
+            const items = this.dom.stage.querySelectorAll('.sort-item');
+            if (items[currentJ]) items[currentJ].classList.add('shake');
+            if (currentJ > 0 && items[currentJ - 1]) items[currentJ - 1].classList.add('shake');
+            setTimeout(() => {
+                if (items[currentJ]) items[currentJ].classList.remove('shake');
+                if (currentJ > 0 && items[currentJ - 1]) items[currentJ - 1].classList.remove('shake');
+            }, 450);
+        }
+
+        this.updateStatsUI();
+        this.updateGuidance();
+
+        if (result.isFinished) {
+            if (this.currentMode === 'duel') {
+                this.handleDuelOver(true);
+            } else {
+                this.handleLevelComplete();
+            }
+        } else {
+            this.renderBoard();
+            this.renderControls();
+        }
+    }
+
     animateItemSwap(idx1, idx2) {
         const items = this.dom.stage.querySelectorAll('.sort-item');
         if (items[idx1]) items[idx1].classList.add('swapping-right');
@@ -672,7 +847,8 @@ class SortingGame {
     showVictoryModal() {
         const modal = this.dom.victoryModal;
         const algoType = this.algoState.type;
-        const theory = SortingTheory[algoType === 'bubble' ? 'bubbleSort' : 'selectionSort'];
+        const theoryKey = algoType === 'bubble' ? 'bubbleSort' : (algoType === 'selection' ? 'selectionSort' : 'insertionSort');
+        const theory = SortingTheory[theoryKey] || SortingTheory.bubbleSort;
 
         // Calculate star rating (1 to 3 stars based on errors & efficiency)
         const errors = this.algoState.errors;
@@ -722,10 +898,12 @@ class SortingGame {
         GAME_LEVELS.forEach((lvl, idx) => {
             const btn = document.createElement('div');
             btn.className = `level-card-btn ${this.currentLevelIdx === idx ? 'active' : ''}`;
+            const algoIcon = lvl.algorithm === 'bubble' ? '🫧' : (lvl.algorithm === 'selection' ? '🎯' : '📥');
+            const algoName = lvl.algorithm === 'bubble' ? 'Bubble Sort' : (lvl.algorithm === 'selection' ? 'Selection Sort' : 'Insertion Sort');
             btn.innerHTML = `
-                <div class="lvl-icon">${lvl.algorithm === 'bubble' ? '🫧' : '🎯'}</div>
+                <div class="lvl-icon">${algoIcon}</div>
                 <div class="lvl-num">ด่านที่ ${lvl.id}</div>
-                <div class="lvl-algo">${lvl.algorithm === 'bubble' ? 'Bubble Sort' : 'Selection Sort'}</div>
+                <div class="lvl-algo">${algoName}</div>
                 <div style="font-size: 0.7rem; color: var(--text-muted);">${lvl.data.length} ชิ้น</div>
             `;
             btn.addEventListener('click', () => {
@@ -754,15 +932,25 @@ class SortingGame {
         this.dom.btnModeSandbox.classList.remove('active');
         this.dom.btnModeDuel.classList.add('active');
 
+        // Check if user selected custom algorithms in duel modal
+        const playerSelect = document.getElementById('duel-player-algo');
+        const aiSelect = document.getElementById('duel-ai-algo');
+        const playerAlgo = playerSelect ? playerSelect.value : 'bubble';
+        const aiAlgo = aiSelect ? aiSelect.value : 'selection';
+
         // Create same random array for both player and AI
         const sharedArray = generateDistinctArray(6, 12, 95);
-        this.algoState = new AlgorithmState(sharedArray, 'bubble');
-        this.aiState = new AlgorithmState(sharedArray, 'selection'); // AI uses Selection sort!
+        this.algoState = new AlgorithmState(sharedArray, playerAlgo);
+        this.aiState = new AlgorithmState(sharedArray, aiAlgo);
         this.duelWinner = null;
         this.isGameActive = true;
 
+        const algoNames = { bubble: 'Bubble Sort', selection: 'Selection Sort', insertion: 'Insertion Sort' };
+        const pName = algoNames[playerAlgo] || 'Bubble Sort';
+        const aiName = algoNames[aiAlgo] || 'Selection Sort';
+
         this.dom.levelBadge.textContent = "⚔️ ALGORITHM DUEL";
-        this.dom.levelTitle.textContent = "คุณ (Bubble Sort) VS AI Bot (Selection Sort)";
+        this.dom.levelTitle.textContent = `คุณ (${pName}) VS AI Bot (${aiName})`;
         this.dom.levelSubtitle.textContent = "แข่งกันจัดลำดับให้เสร็จก่อน! ดูว่าความเร็วของคุณจะชนะขั้นตอนวิธีของ AI หรือไม่";
 
         this.startTimer();
@@ -782,14 +970,26 @@ class SortingGame {
     stepAI() {
         if (!this.aiState || this.aiState.isFinished) return;
 
-        // AI performs Selection sort perfectly
-        let trueMin = this.aiState.i;
-        for (let k = this.aiState.i; k < this.aiState.n; k++) {
-            if (this.aiState.array[k] < this.aiState.array[trueMin]) {
-                trueMin = k;
+        if (this.aiState.type === 'selection') {
+            let trueMin = this.aiState.i;
+            for (let k = this.aiState.i; k < this.aiState.n; k++) {
+                if (this.aiState.array[k] < this.aiState.array[trueMin]) {
+                    trueMin = k;
+                }
+            }
+            this.aiState.selectionSelectMinAndSwap(trueMin);
+        } else if (this.aiState.type === 'bubble') {
+            const expected = this.aiState.getBubbleExpectedAction();
+            if (expected) {
+                this.aiState.bubbleStep(expected);
+            }
+        } else if (this.aiState.type === 'insertion') {
+            const expected = this.aiState.getInsertionExpectedAction();
+            if (expected) {
+                this.aiState.insertionStep(expected);
             }
         }
-        this.aiState.selectionSelectMinAndSwap(trueMin);
+
         if (this.currentMode === 'duel') {
             this.renderControls();
         }
@@ -806,13 +1006,17 @@ class SortingGame {
         clearInterval(this.aiInterval);
         this.stopTimer();
 
+        const algoNames = { bubble: 'Bubble Sort', selection: 'Selection Sort', insertion: 'Insertion Sort' };
+        const pName = algoNames[this.algoState.type] || 'Bubble Sort';
+        const aiName = algoNames[this.aiState ? this.aiState.type : 'selection'] || 'Selection Sort';
+
         if (playerWon) {
             window.soundManager.playVictory();
             this.triggerConfetti();
-            alert("🎉 ชัยชนะเป็นของคุณ! คุณจัดเรียง Bubble Sort เสร็จก่อนที่ AI จะเสร็จสิ้น!");
+            alert(`🎉 ชัยชนะเป็นของคุณ! คุณจัดเรียง ${pName} เสร็จก่อนที่ AI (${aiName}) จะเสร็จสิ้น!`);
         } else {
             window.soundManager.playError();
-            alert("🤖 AI ชนะ! Selection Sort จัดการสลับตำแหน่งจนครบเรียบร้อยแล้ว พยายามใหม่อีกครั้ง!");
+            alert(`🤖 AI ชนะ! AI Bot ที่ใช้ ${aiName} จัดการเสร็จสมบูรณ์ก่อน พยายามใหม่อีกครั้ง!`);
         }
     }
 
@@ -835,6 +1039,14 @@ class SortingGame {
             const num = parseInt(e.key);
             if (!isNaN(num) && num >= 1 && num <= this.algoState.n) {
                 this.handleSelectionPick(num - 1);
+            }
+        } else if (this.algoState.type === 'insertion') {
+            if (e.code === 'ArrowLeft' || e.key === 'ArrowLeft' || e.key.toLowerCase() === 'a') {
+                e.preventDefault();
+                this.handleInsertionAction('SHIFT');
+            } else if (e.code === 'ArrowDown' || e.key === 'ArrowDown' || e.code === 'Space' || e.key === 'Enter' || e.key.toLowerCase() === 's' || e.key.toLowerCase() === 'd') {
+                e.preventDefault();
+                this.handleInsertionAction('INSERT');
             }
         }
 

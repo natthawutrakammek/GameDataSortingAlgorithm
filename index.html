@@ -20,13 +20,13 @@
                 <div class="brand-icon">✨</div>
                 <div class="brand-text">
                     <h1>SORTING MASTER</h1>
-                    <p>เกมไขปริศนาจัดลำดับด้วยขั้นตอนวิธี Bubble & Selection</p>
+                    <p>เกมไขปริศนาจัดลำดับด้วยขั้นตอนวิธี Bubble, Selection & Insertion</p>
                 </div>
             </div>
 
             <!-- Mode Selector Pills -->
             <div class="mode-pills">
-                <button class="mode-pill active" id="btn-mode-campaign">🏆 แคมเปญ (8 ด่าน)</button>
+                <button class="mode-pill active" id="btn-mode-campaign">🏆 แคมเปญ (12 ด่าน)</button>
                 <button class="mode-pill" id="btn-mode-duel">⚔️ ดวล AI</button>
                 <button class="mode-pill" id="btn-mode-sandbox">🧪 ทดลองอิสระ</button>
             </div>
@@ -123,7 +123,7 @@
             <div class="modal-header">
                 <div class="modal-icon">📖</div>
                 <h2>ทำความเข้าใจ Sorting Algorithms</h2>
-                <p>เปรียบเทียบขั้นตอนวิธีและหลักการทำงานของ Bubble Sort vs Selection Sort</p>
+                <p>เปรียบเทียบขั้นตอนวิธีและหลักการทำงานของ Bubble Sort, Selection Sort และ Insertion Sort</p>
             </div>
 
             <div class="theory-grid">
@@ -154,13 +154,28 @@
                     <div class="theory-prop"><span class="prop-title">จำนวนการสลับ:</span><span class="prop-val" style="color: var(--accent-green);">น้อยมาก (ไม่เกิน n-1)</span></div>
                     <div class="theory-prop"><span class="prop-title">ความเสถียร (Stable):</span><span class="prop-val" style="color: var(--accent-amber);">ไม่เสถียร (Unstable)</span></div>
                 </div>
+
+                <!-- Insertion Sort Theory -->
+                <div class="theory-card highlight-insertion">
+                    <h3>📥 Insertion Sort</h3>
+                    <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 12px;">
+                        หยิบข้อมูลทีละตัวจากส่วนที่ยังไม่เรียง แล้วนำมา <strong>แทรก (Insert)</strong> ในตำแหน่งที่ถูกต้องของส่วนที่เรียงแล้วทางซ้ายมือ เหมือนการหยิบไพ่มาจัดในมือ
+                    </p>
+                    <div class="theory-prop"><span class="prop-title">Best Time:</span><span class="prop-val" style="color: var(--accent-green);">O(n) (ข้อมูลเรียงอยู่แล้ว)</span></div>
+                    <div class="theory-prop"><span class="prop-title">Average Time:</span><span class="prop-val">O(n²)</span></div>
+                    <div class="theory-prop"><span class="prop-title">Worst Time:</span><span class="prop-val">O(n²) (เรียงย้อนหลัง)</span></div>
+                    <div class="theory-prop"><span class="prop-title">Space Complexity:</span><span class="prop-val">O(1)</span></div>
+                    <div class="theory-prop"><span class="prop-title">จำนวนการสลับ:</span><span class="prop-val" style="color: var(--accent-amber);">ปานกลาง (Shift ข้อมูล)</span></div>
+                    <div class="theory-prop"><span class="prop-title">ความเสถียร (Stable):</span><span class="prop-val" style="color: var(--accent-green);">ใช่ (Stable)</span></div>
+                </div>
             </div>
 
             <div style="background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 14px; font-size: 0.84rem; line-height: 1.6;">
                 <h4 style="color: #fff; margin-bottom: 6px;">💡 ข้อแตกต่างสำคัญสำหรับการนำไปใช้จริง:</h4>
                 <ul style="padding-left: 20px; color: var(--text-muted);">
-                    <li><strong>Bubble Sort</strong> เหมาะสำหรับชุดข้อมูลที่มีขนาดเล็กมาก หรือข้อมูลที่ <em>เกือบจะเรียงอยู่แล้ว</em> เพราะสามารถจบการทำงานได้ใน O(n) รอบเดียว</li>
-                    <li><strong>Selection Sort</strong> โดดเด่นเรื่อง <em>จำนวนครั้งในการเขียน/สลับข้อมูล (Memory Swaps) ที่น้อยมาก</em> จึงเหมาะกับกรณีที่ต้นทุนการ Swap มีราคาสูง เช่น Flash memory หรือ EEPROM</li>
+                    <li><strong>Bubble Sort</strong>: เหมาะสำหรับชุดข้อมูลขนาดเล็กมาก หรือข้อมูลที่เกือบเรียงอยู่แล้ว มีกลไกเข้าใจง่ายที่สุด</li>
+                    <li><strong>Selection Sort</strong>: โดดเด่นเรื่อง <em>จำนวนครั้งในการเขียน/สลับข้อมูล (Memory Swaps) ที่น้อยมาก</em> (ไม่เกิน n-1 ครั้ง) จึงเหมาะกับ Flash memory หรือ EEPROM ที่ต้นทุนการเขียนสูง</li>
+                    <li><strong>Insertion Sort</strong>: <em>รวดเร็วที่สุดสำหรับข้อมูลที่เกือบเรียงสมบูรณ์ (Nearly Sorted)</em> ใช้เวลาเพียง O(n) และเหมาะกับการรับข้อมูลเพิ่มเข้ามาทีละตัวอย่างต่อเนื่อง (Online Algorithm)</li>
                 </ul>
             </div>
         </div>
@@ -226,17 +241,36 @@
             <div class="modal-header">
                 <div class="modal-icon">⚔️</div>
                 <h2>ประลองความเร็ว: มนุษย์ VS AI Bot</h2>
-                <p>คุณจะใช้ Bubble Sort แข่งกับ AI ที่ใช้ Selection Sort บนข้อมูลชุดเดียวกัน</p>
+                <p>เลือกขั้นตอนวิธีที่คุณต้องการควบคุม และเลือกขั้นตอนวิธีให้ AI Bot เพื่อประลองความเร็วบนข้อมูลชุดเดียวกัน</p>
             </div>
 
             <div style="background: rgba(15, 23, 42, 0.7); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 18px; margin: 16px 0; font-size: 0.9rem; line-height: 1.6;">
-                <p style="margin-bottom: 10px;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px;">
+                    <div>
+                        <label style="display: block; font-size: 0.82rem; color: var(--text-muted); margin-bottom: 6px;">👤 อัลกอริทึมของคุณ:</label>
+                        <select id="duel-player-algo" style="width: 100%; background: var(--bg-secondary); color: #fff; border: 1px solid var(--border-color); border-radius: 8px; padding: 8px 10px; font-family: inherit;">
+                            <option value="bubble">🫧 Bubble Sort (SWAP / KEEP)</option>
+                            <option value="insertion">📥 Insertion Sort (SHIFT / INSERT)</option>
+                            <option value="selection">🎯 Selection Sort (คลิกเลือก Min)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label style="display: block; font-size: 0.82rem; color: var(--text-muted); margin-bottom: 6px;">🤖 อัลกอริทึมของ AI Bot:</label>
+                        <select id="duel-ai-algo" style="width: 100%; background: var(--bg-secondary); color: #fff; border: 1px solid var(--border-color); border-radius: 8px; padding: 8px 10px; font-family: inherit;">
+                            <option value="selection" selected>🎯 Selection Sort (สแกนหา Min)</option>
+                            <option value="bubble">🫧 Bubble Sort (คู่ติดกัน)</option>
+                            <option value="insertion">📥 Insertion Sort (แทรกเรียง)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <p style="margin-bottom: 8px;">
                     🤖 <strong>กฎการแข่งขัน:</strong>
                 </p>
-                <ul style="padding-left: 20px; color: var(--text-muted);">
+                <ul style="padding-left: 20px; color: var(--text-muted); font-size: 0.84rem;">
                     <li>ทั้งสองฝ่ายจะได้รับชุดตัวเลข 6 ตัวที่สุ่มเหมือนกัน</li>
-                    <li>คุณควบคุม <strong>Bubble Sort</strong>: เลื่อนคู่ติดกันและตัดสินใจสลับหรือข้ามให้เร็วที่สุด</li>
-                    <li>AI Bot จะประมวลผล <strong>Selection Sort</strong> อัตโนมัติทีละสเต็ปตามความเร็วที่กำหนด</li>
+                    <li>คุณควบคุมขั้นตอนวิธีที่เลือกด้วยตนเองผ่านปุ่มหรือคีย์บอร์ด</li>
+                    <li>AI Bot จะประมวลผลขั้นตอนวิธีที่เลือกโดยอัตโนมัติทีละสเต็ป</li>
                     <li>ฝ่ายใดจัดเรียงข้อมูลเสร็จสมบูรณ์ก่อนจะเป็นผู้ชนะ!</li>
                 </ul>
             </div>

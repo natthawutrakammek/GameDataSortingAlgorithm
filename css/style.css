@@ -436,6 +436,26 @@ body {
     animation: pulse-pink 1.5s infinite;
 }
 
+.sort-item.comparing-key {
+    border-color: var(--accent-purple) !important;
+    box-shadow: 0 0 25px rgba(168, 85, 247, 0.7), 0 0 0 2px rgba(168, 85, 247, 0.5) !important;
+    transform: translateY(-14px) scale(1.06);
+    z-index: 10;
+    animation: pulse-purple 1.5s infinite;
+}
+
+@keyframes pulse-purple {
+    0%, 100% { box-shadow: 0 0 15px rgba(168, 85, 247, 0.4), 0 0 0 2px rgba(168, 85, 247, 0.3); }
+    50% { box-shadow: 0 0 30px rgba(168, 85, 247, 0.8), 0 0 0 3px rgba(168, 85, 247, 0.6); }
+}
+
+.sort-item.comparing-neighbor {
+    border: 2px dashed var(--accent-blue) !important;
+    box-shadow: 0 0 18px rgba(56, 189, 248, 0.4);
+    transform: translateY(-6px);
+    z-index: 8;
+}
+
 @keyframes pulse-pink {
     0%, 100% { box-shadow: 0 0 15px rgba(236, 72, 153, 0.4); }
     50% { box-shadow: 0 0 28px rgba(236, 72, 153, 0.8); }
@@ -720,7 +740,7 @@ body {
 /* Theory Comparison Grid */
 .theory-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
     gap: 16px;
     margin: 20px 0;
 }
@@ -744,6 +764,10 @@ body {
 
 .theory-card.highlight-selection {
     border-color: rgba(245, 158, 11, 0.4);
+}
+
+.theory-card.highlight-insertion {
+    border-color: rgba(168, 85, 247, 0.4);
 }
 
 .theory-card h3 {
