@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sorting Master: The Algorithm Puzzle Game | เกมจัดลำดับเรียนรู้อัลกอริทึม</title>
+    <!-- Google Fonts for Thai & English -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:ital,wght@0,300;0,400;0,600;0,700;0,800;1,400&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <canvas id="confetti-canvas"></canvas>
+
+    <div class="game-container">
+        <!-- TOP NAVIGATION -->
+        <header class="top-nav">
+            <div class="brand">
+                <div class="brand-icon">✨</div>
+                <div class="brand-text">
+                    <h1>SORTING MASTER</h1>
+                    <p>เกมไขปริศนาจัดลำดับด้วยขั้นตอนวิธี Bubble & Selection</p>
+                </div>
+            </div>
+
+            <!-- Mode Selector Pills -->
+            <div class="mode-pills">
+                <button class="mode-pill active" id="btn-mode-campaign">🏆 แคมเปญ (8 ด่าน)</button>
+                <button class="mode-pill" id="btn-mode-duel">⚔️ ดวล AI</button>
+                <button class="mode-pill" id="btn-mode-sandbox">🧪 ทดลองอิสระ</button>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="nav-actions">
+                <button class="btn-icon" id="btn-theory" title="ทฤษฎีและวิธีเล่น">📚</button>
+                <button class="btn-icon" id="btn-levels" title="เลือกด่าน">🗺️</button>
+                <button class="btn-icon" id="btn-restart" title="เริ่มด่านใหม่ (R)">🔄</button>
+                <button class="btn-icon" id="sound-toggle-btn" title="เปิด/ปิดเสียง">🔊</button>
+            </div>
+        </header>
+
+        <!-- LEVEL INFO & METRICS BAR -->
+        <section class="level-banner">
+            <div class="level-meta">
+                <span class="level-badge" id="level-badge">Bubble Sort</span>
+                <div class="level-titles">
+                    <h2 id="level-title">ระดับ 1: ปฐมบทฟองสบู่</h2>
+                    <p id="level-subtitle">เปรียบเทียบทีละคู่ติดกันและดันค่ามากที่สุดไปขวา</p>
+                </div>
+            </div>
+
+            <div class="stats-bar">
+                <div class="stat-item">
+                    <span class="stat-label">⏱️ เวลา</span>
+                    <span class="stat-value" id="stat-timer">00:00</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">⚖️ เปรียบเทียบ</span>
+                    <span class="stat-value highlight-blue" id="stat-comparisons">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">🔄 สลับ (Swap)</span>
+                    <span class="stat-value highlight-amber" id="stat-swaps">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">⭐ คะแนน</span>
+                    <span class="stat-value highlight-green" id="stat-score">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">🔥 คอมโบ</span>
+                    <span class="stat-value" id="stat-combo">x0</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- GUIDANCE BOX (REAL-TIME ALGORITHM EXPLANATION) -->
+        <section class="guidance-box">
+            <div class="guide-icon" id="guide-icon">🫧</div>
+            <div class="guide-content">
+                <div class="guide-title" id="guide-title">Bubble Sort — รอบที่ 1 (Pass 1)</div>
+                <div class="guide-message" id="guide-message">เปรียบเทียบช่อง [0] ค่า (45) กับ ช่อง [1] ค่า (12)</div>
+                <div class="guide-hint" id="guide-hint">💡 สังเกต: 45 > 12 (ตัวซ้ายมากกว่า) จึงควร "สลับ (SWAP)"</div>
+            </div>
+        </section>
+
+        <!-- MAIN ARENA / STAGE -->
+        <main class="arena-card">
+            <div class="arena-header">
+                <div style="font-size: 0.85rem; color: var(--text-muted); font-weight: 600;">
+                    🎯 เป้าหมาย: จัดเรียงข้อมูลจาก <span style="color: var(--accent-blue);">น้อยไปมาก (Ascending)</span>
+                </div>
+
+                <!-- Theme Switcher -->
+                <div class="theme-switcher">
+                    <button class="theme-btn active" data-theme="book">📚 หอสมุดเวทมนตร์</button>
+                    <button class="theme-btn" data-theme="train">🚂 ขบวนรถไฟสินค้า</button>
+                </div>
+            </div>
+
+            <!-- Elements Stage -->
+            <div class="sorting-stage" id="sorting-stage">
+                <!-- Dynamically rendered sorting items -->
+            </div>
+
+            <!-- Interaction Control Dock -->
+            <div class="control-dock" id="control-dock">
+                <!-- Dynamically injected based on active algorithm -->
+            </div>
+
+            <!-- Real-time Action Log -->
+            <div class="action-log">
+                <div id="action-log-text">ยินดีต้อนรับสู่ Sorting Master! คลิกปุ่มด้านบนหรือใช้คีย์ลัดเพื่อเริ่มเล่น</div>
+                <div class="log-badge">Live System</div>
+            </div>
+        </main>
+    </div>
+
+    <!-- MODAL 1: THEORY & ALGORITHM GUIDE -->
+    <div class="modal-overlay" id="theory-modal">
+        <div class="modal-box">
+            <button class="modal-close-btn">&times;</button>
+            <div class="modal-header">
+                <div class="modal-icon">📖</div>
+                <h2>ทำความเข้าใจ Sorting Algorithms</h2>
+                <p>เปรียบเทียบขั้นตอนวิธีและหลักการทำงานของ Bubble Sort vs Selection Sort</p>
+            </div>
+
+            <div class="theory-grid">
+                <!-- Bubble Sort Theory -->
+                <div class="theory-card highlight-bubble">
+                    <h3>🫧 Bubble Sort</h3>
+                    <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 12px;">
+                        เปรียบเทียบทีละ <strong>คู่ที่อยู่ติดกัน (Adjacent)</strong> หากตัวซ้ายมากกว่าตัวขวาจะทำการสลับที่กัน ค่าที่มากที่สุดจะค่อยๆ ลอยขึ้นไปอยู่ขวาสุดเหมือนฟองสบู่
+                    </p>
+                    <div class="theory-prop"><span class="prop-title">Best Time:</span><span class="prop-val">O(n) (มี Flag เช็ค)</span></div>
+                    <div class="theory-prop"><span class="prop-title">Average Time:</span><span class="prop-val">O(n²)</span></div>
+                    <div class="theory-prop"><span class="prop-title">Worst Time:</span><span class="prop-val">O(n²) (เรียงย้อนหลัง)</span></div>
+                    <div class="theory-prop"><span class="prop-title">Space Complexity:</span><span class="prop-val">O(1)</span></div>
+                    <div class="theory-prop"><span class="prop-title">จำนวนการสลับ:</span><span class="prop-val" style="color: var(--accent-rose);">มาก (ถึง n²/2)</span></div>
+                    <div class="theory-prop"><span class="prop-title">ความเสถียร (Stable):</span><span class="prop-val" style="color: var(--accent-green);">ใช่ (Stable)</span></div>
+                </div>
+
+                <!-- Selection Sort Theory -->
+                <div class="theory-card highlight-selection">
+                    <h3>🎯 Selection Sort</h3>
+                    <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 12px;">
+                        สแกนค้นหา <strong>ค่าน้อยที่สุด (Minimum)</strong> ในส่วนที่ยังไม่ได้จัดเรียง แล้วนำมาสลับกับตำแหน่งแรกของรอบนั้นทีละตำแหน่งจนครบ
+                    </p>
+                    <div class="theory-prop"><span class="prop-title">Best Time:</span><span class="prop-val">O(n²)</span></div>
+                    <div class="theory-prop"><span class="prop-title">Average Time:</span><span class="prop-val">O(n²)</span></div>
+                    <div class="theory-prop"><span class="prop-title">Worst Time:</span><span class="prop-val">O(n²)</span></div>
+                    <div class="theory-prop"><span class="prop-title">Space Complexity:</span><span class="prop-val">O(1)</span></div>
+                    <div class="theory-prop"><span class="prop-title">จำนวนการสลับ:</span><span class="prop-val" style="color: var(--accent-green);">น้อยมาก (ไม่เกิน n-1)</span></div>
+                    <div class="theory-prop"><span class="prop-title">ความเสถียร (Stable):</span><span class="prop-val" style="color: var(--accent-amber);">ไม่เสถียร (Unstable)</span></div>
+                </div>
+            </div>
+
+            <div style="background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 14px; font-size: 0.84rem; line-height: 1.6;">
+                <h4 style="color: #fff; margin-bottom: 6px;">💡 ข้อแตกต่างสำคัญสำหรับการนำไปใช้จริง:</h4>
+                <ul style="padding-left: 20px; color: var(--text-muted);">
+                    <li><strong>Bubble Sort</strong> เหมาะสำหรับชุดข้อมูลที่มีขนาดเล็กมาก หรือข้อมูลที่ <em>เกือบจะเรียงอยู่แล้ว</em> เพราะสามารถจบการทำงานได้ใน O(n) รอบเดียว</li>
+                    <li><strong>Selection Sort</strong> โดดเด่นเรื่อง <em>จำนวนครั้งในการเขียน/สลับข้อมูล (Memory Swaps) ที่น้อยมาก</em> จึงเหมาะกับกรณีที่ต้นทุนการ Swap มีราคาสูง เช่น Flash memory หรือ EEPROM</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 2: LEVEL SELECT -->
+    <div class="modal-overlay" id="level-select-modal">
+        <div class="modal-box">
+            <button class="modal-close-btn">&times;</button>
+            <div class="modal-header">
+                <div class="modal-icon">🗺️</div>
+                <h2>เลือกด่านการเรียนรู้</h2>
+                <p>ฝึกฝนทักษะการจัดเรียงจากระดับเริ่มต้นไปจนถึงระดับสูง</p>
+            </div>
+            <div class="level-select-grid" id="level-grid">
+                <!-- Dynamically generated levels -->
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 3: VICTORY & SUMMARY -->
+    <div class="modal-overlay" id="victory-modal">
+        <div class="modal-box" style="text-align: center;">
+            <button class="modal-close-btn">&times;</button>
+            <div class="modal-icon">🏆</div>
+            <h2 style="font-size: 1.8rem; color: #fff;">ภารกิจสำเร็จ!</h2>
+            <p style="color: var(--text-muted);">คุณจัดเรียงข้อมูลตามขั้นตอนวิธีได้อย่างถูกต้องแม่นยำ</p>
+
+            <div class="victory-stars" id="victory-stars">
+                <!-- Stars rendered by game -->
+            </div>
+
+            <div class="score-stats-grid">
+                <div class="score-card">
+                    <div class="score-title">⭐ คะแนนรวม</div>
+                    <div class="score-num" id="vic-score">0</div>
+                </div>
+                <div class="score-card">
+                    <div class="score-title">⚖️ เปรียบเทียบ</div>
+                    <div class="score-num highlight-blue" id="vic-comparisons">0</div>
+                </div>
+                <div class="score-card">
+                    <div class="score-title">🔄 จำนวนสลับ</div>
+                    <div class="score-num highlight-amber" id="vic-swaps">0</div>
+                </div>
+            </div>
+
+            <div id="victory-education" style="margin-bottom: 20px;">
+                <!-- Educational summary card -->
+            </div>
+
+            <div style="display: flex; justify-content: center; gap: 12px;">
+                <button class="action-btn btn-keep" id="btn-replay-level">🔄 เล่นซ้ำ</button>
+                <button class="action-btn btn-swap" id="btn-next-level">▶️ ด่านต่อไป</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 4: AI DUEL SETTINGS -->
+    <div class="modal-overlay" id="duel-modal">
+        <div class="modal-box">
+            <button class="modal-close-btn">&times;</button>
+            <div class="modal-header">
+                <div class="modal-icon">⚔️</div>
+                <h2>ประลองความเร็ว: มนุษย์ VS AI Bot</h2>
+                <p>คุณจะใช้ Bubble Sort แข่งกับ AI ที่ใช้ Selection Sort บนข้อมูลชุดเดียวกัน</p>
+            </div>
+
+            <div style="background: rgba(15, 23, 42, 0.7); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 18px; margin: 16px 0; font-size: 0.9rem; line-height: 1.6;">
+                <p style="margin-bottom: 10px;">
+                    🤖 <strong>กฎการแข่งขัน:</strong>
+                </p>
+                <ul style="padding-left: 20px; color: var(--text-muted);">
+                    <li>ทั้งสองฝ่ายจะได้รับชุดตัวเลข 6 ตัวที่สุ่มเหมือนกัน</li>
+                    <li>คุณควบคุม <strong>Bubble Sort</strong>: เลื่อนคู่ติดกันและตัดสินใจสลับหรือข้ามให้เร็วที่สุด</li>
+                    <li>AI Bot จะประมวลผล <strong>Selection Sort</strong> อัตโนมัติทีละสเต็ปตามความเร็วที่กำหนด</li>
+                    <li>ฝ่ายใดจัดเรียงข้อมูลเสร็จสมบูรณ์ก่อนจะเป็นผู้ชนะ!</li>
+                </ul>
+            </div>
+
+            <div style="text-align: center; margin-top: 20px;">
+                <button class="action-btn btn-swap" onclick="window.game.startDuelGame()" style="width: 100%; max-width: 320px;">
+                    🔥 เริ่มต้นการประลอง!
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/audio.js"></script>
+    <script src="js/algorithms.js"></script>
+    <script src="js/game.js"></script>
+</body>
+</html>
